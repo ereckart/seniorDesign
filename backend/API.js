@@ -1,7 +1,13 @@
-var http = require('http');
+var app 		    = require('express')();
+var bodyParser 	= require('body-parser');
 
-//create a server object:
-http.createServer(function (req, res) {
-  res.write('Hello World API Ready!'); //write a response to the client
-  res.end(); //end the response
-}).listen(8000); //the server object listens on port 8080
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
+app.get('/', function(req, res) {
+  res.send("API Root");
+  res.end();
+  console.log('API domain');
+});
+
+app.listen(8000);
