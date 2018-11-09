@@ -12,7 +12,7 @@
  *           str - the given index for a unique value
  *           func - call back function that accepts an error and a count
 */
-var sql = require('./mysql_pool');
+var sql = require('./mysql-pool');
 var last_count =  0;
 var counter_id = 0;
 
