@@ -153,9 +153,3 @@ function verify(connection, trt, code, func) {
 exports.login = login;
 exports.register = register;
 exports.verify = verify;
-
-sql.pool.getConnection(function(err, connection) {
-  login(connection, '9546955202', '12345678', function(error, pat) {
-    console.log(pat);
-  });
-});
