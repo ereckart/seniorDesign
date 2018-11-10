@@ -51,26 +51,27 @@ function register(connection, first, last, phone, password, func) {
       } else if (results.length > 0) {
         func('error_phone_registered', null);
       } else {
-        counter.uniq(connection, 'pending', function (error, count) {
+        counter.uniq(connection, 'user', function (error, count) {
           if (error != null) {
             func(error, null);
           } else {
             var user_id = Math.round(Math.random()*899999+100000)+''+count;
-            var private_key = 'TRT_'+count+'_'
-                              +Math.round(Math.random()*899999+100000)+''
-                              +Math.round(Math.random()*899999+100000)+''
-                              +Math.round(Math.random()*899999+100000)+''
-                              +Math.round(Math.random()*899999+100000);
             var sms_key = Math.round(Math.random()*899999+100000)
-            connection.query("INSERT INTO `users_pending`(`user_id`,`private_key`,`sms_key`, `first`, `last`, `phone`, `password`) VALUES (?,?,?,?,?,?,?)", [user_id,private_key,sms_key,first,last,phone,hash], function (error, results, fields) {
+            counter.token(connection, 'pkey', 'PKEY', 75, function(err, private_key) {
               if (error != null) {
-                func('error_misc', null);
+                func(error, null);
               } else {
-                send_sms_verification(connection, private_key, function(error) {
+                connection.query("INSERT INTO `users_pending`(`user_id`,`private_key`,`sms_key`, `first`, `last`, `phone`, `password`) VALUES (?,?,?,?,?,?,?)", [user_id,private_key,sms_key,first,last,phone,hash], function (error, results, fields) {
                   if (error != null) {
-                    func('error_sending_sms', null);
+                    func('error_misc', null);
                   } else {
-                    func(null,private_key);
+                    send_sms_verification(connection, private_key, function(error) {
+                      if (error != null) {
+                        func('error_sending_sms', null);
+                      } else {
+                        func(null,private_key);
+                      }
+                    });
                   }
                 });
               }
@@ -95,13 +96,66 @@ function send_sms_verification(connection, key, func) {
 	});
 }
 
+function verify(connection, trt, code, func) {
+  connection.query("SELECT * FROM users_pending WHERE private_key = ? AND attempts > 0", [trt], function (error, results, fields) {
+    if (error != null) {
+      func('error_misc',null);
+    } else if (results.length == 0) {
+      func('error_trt',null);
+    } else {
+      var actual_code = results[0].sms_key;
+      var user_id = results[0].user_id;
+      var user_phone = results[0].phone;
+      var user_password = results[0].password;
+      var user_first = results[0].first;
+      var user_last = results[0].last;
+      if (actual_code == code) {
+        counter.token(connection, 'pat', 'PAT', 75, function(err, pat) {
+          if (error != null) {
+            func(error, null);
+          } else {
+            connection.query("INSERT INTO `users_pat`(`pat`, `user_id`) VALUES (?,?)", [pat,user_id], function (error, results, fields) {
+              if (error != null) {
+                func(error,null);
+              } else {
+                connection.query("INSERT INTO `users`(`user_id`, `phone`, `password`, `first`, `last`) VALUES (?,?,?,?,?)", [user_id,user_phone,user_password,user_first, user_last], function (error, results, fields) {
+                  if (error != null) {
+                    func(error,null);
+                  } else {
+                    connection.query("DELETE FROM users_pending WHERE private_key = ? OR phone = ?", [trt,user_phone], function (error, results, fields) {
+                      if (error != null) {
+                      } else {
+                        func(null,pat);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      } else {
+        connection.query("UPDATE users_pending SET attempts = attempts-1 WHERE private_key = ?", [trt], function (error, results, fields) {
+            func('error_code',null);
+        });
+      }
+    }
+  });
+}
 
 exports.login = login;
 exports.register = register;
+exports.verify = verify;
 
 sql.pool.getConnection(function(err, connection) {
-  register(connection, 'Kevin', 'Thomas', '9546955202', '12345678', function(error, key) {
+  /*
+  register(connection, 'Kevin', 'Thomas', '9546955202','12345678', function(error, val) {
+    console.log(val)
+  });
+  */
+  verify(connection, 'PKEY_31_29_3259763604055414965367121378246517458637126517503998400510850186', '227760', function(error, pat) {
     console.log(error);
-    console.log(key);
+    console.log(pat);
   })
+
 });
