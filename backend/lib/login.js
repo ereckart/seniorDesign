@@ -21,11 +21,19 @@ function login(connection, phone, password, func) {
           if (error != null) {
             func(error,null);
           } else {
-            var pat = 'PAT_'+user_id+'_'+count+'_'
-                            +Math.round(Math.random()*899999+100000)+''
-                            +Math.round(Math.random()*899999+100000)+''
-                            +Math.round(Math.random()*899999+100000);
-            func(null,pat);
+            counter.token(connection, 'pat', 'PAT', 75, function(err, pat) {
+              if (error != null) {
+                func(error, null);
+              } else {
+                connection.query("INSERT INTO `users_pat`(`pat`, `user_id`) VALUES (?,?)", [pat,user_id], function (error, results, fields) {
+                  if (error != null) {
+                    func(error,null);
+                  } else {
+                    func(null,pat);
+                  }
+                });
+              }
+            });
           }
         });
       }
@@ -51,12 +59,11 @@ function register(connection, first, last, phone, password, func) {
       } else if (results.length > 0) {
         func('error_phone_registered', null);
       } else {
-        counter.uniq(connection, 'user', function (error, count) {
+        counter.uniq(connection, 'user', function (error, user_id) {
           if (error != null) {
             func(error, null);
           } else {
-            var user_id = Math.round(Math.random()*899999+100000)+''+count;
-            var sms_key = Math.round(Math.random()*899999+100000)
+            var sms_key = Math.round(Math.random()*899999+100000);
             counter.token(connection, 'pkey', 'PKEY', 75, function(err, private_key) {
               if (error != null) {
                 func(error, null);
@@ -148,14 +155,7 @@ exports.register = register;
 exports.verify = verify;
 
 sql.pool.getConnection(function(err, connection) {
-  /*
-  register(connection, 'Kevin', 'Thomas', '9546955202','12345678', function(error, val) {
-    console.log(val)
-  });
-  */
-  verify(connection, 'PKEY_31_29_3259763604055414965367121378246517458637126517503998400510850186', '227760', function(error, pat) {
-    console.log(error);
+  login(connection, '9546955202', '12345678', function(error, pat) {
     console.log(pat);
-  })
-
+  });
 });
