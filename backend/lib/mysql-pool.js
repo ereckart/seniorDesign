@@ -5,7 +5,8 @@ var pool  = mysql.createPool({
   host     : 'waitrtech.com',
   user     : 'waitrtech',
   password : 'sdesign19',
-  database : 'waitrtech'
+  database : 'waitrtech',
+  multipleStatements:true
 });
 pool.on('acquire', function (connection) {
   //console.log('Connection %d acquired', connection.threadId);
