@@ -85,7 +85,16 @@ function token(connection, name, prefix, len, func) {
   });
 }
 
+function rand_str(len) {
+  var str = '';
+  while (str.length < len) {
+    str += Math.floor(Math.random() * 36).toString(36);
+  };
+  return str;
+}
+
 config();
 exports.uniq = uniq;
 exports.set_class_id = set_class_id;
 exports.token = token;
+console.log(rand_str(80));
