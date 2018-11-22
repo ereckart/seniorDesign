@@ -97,4 +97,4 @@ config();
 exports.uniq = uniq;
 exports.set_class_id = set_class_id;
 exports.token = token;
-console.log(rand_str(80));
+exports.rand_str = rand_str;
