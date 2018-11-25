@@ -12,7 +12,7 @@ app.get('/', function(req, res) {
   console.log('API domain');
 });
 
-app.post('/login/login', function(req, res) {
+app.post('/login', function(req, res) {
   var phone = req.body.phone,
       password = req.body.password;
   sql.pool.getConnection(function(err, connection) {
@@ -38,7 +38,7 @@ app.post('/login/register', function(req, res) {
     });
   });
 });
-app.post('/login/verify', function(req, res) {
+app.put('/login/register', function(req, res) {
   var trt = req.body.private_key,
       code = req.body.sms_key;
   sql.pool.getConnection(function(err, connection) {
