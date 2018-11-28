@@ -1,10 +1,13 @@
 var app 		    = require('express')();
 var bodyParser 	= require('body-parser');
+var cors = require('cors');
 var sql         = require('./lib/mysql-pool');
 var login       = require('./lib/login');
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use(cors()); //enables CORS
+
 
 app.get('/', function(req, res) {
   res.send("API Root");
@@ -17,10 +20,7 @@ app.post('/login', function(req, res) {
       password = req.body.password;
   sql.pool.getConnection(function(err, connection) {
     login.login(connection, phone, password, function(error, pat) {
-      var output = {};
-      output.error = error;
-      output.pat = pat;
-      res.json(output);
+      res.json({'error': error, 'pat': pat});
     });
   });
 });
@@ -31,10 +31,7 @@ app.post('/login/register', function(req, res) {
       last = req.body.last;
   sql.pool.getConnection(function(err, connection) {
     login.register(connection, first, last, phone, password,function(error, pkey) {
-      var output = {};
-      output.error = error;
-      output.private_key = pkey;
-      res.json(output);
+      res.json({'error': error, 'private_key':pkey});
     });
   });
 });
@@ -43,10 +40,17 @@ app.put('/login/register', function(req, res) {
       code = req.body.sms_key;
   sql.pool.getConnection(function(err, connection) {
     login.verify(connection, trt, code, function(error, pat) {
-      var output = {};
-      output.error = error;
-      output.pat = pat;
-      res.json(output);
+      res.json({'error': error, 'token': pat});
+    });
+  });
+});
+
+app.delete('/login/', function(req, res) {
+  var pat = req.body.token;
+  sql.pool.getConnection(function(err, connection) {
+    login.logout(connection,pat, function(error) {
+      res.json({'error': error});
+      connection.release();
     });
   });
 });
