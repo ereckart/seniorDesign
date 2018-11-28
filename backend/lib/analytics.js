@@ -9,3 +9,5 @@ function dump_restaurants(connection, func) {
 		}
 	});
 }
+
+exports.dump_restaurants = dump_restaurants;
