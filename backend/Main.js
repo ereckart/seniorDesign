@@ -60,20 +60,9 @@ app.get('/login', function (req, res) {
   //res.redirect('/');
   res.render('login/login');
 });
-app.post('/login', function (req, res) {
-  var phone = req.body.phone,
-      password = req.body.password;
-  sql.pool.getConnection(function(err, connection) {
-    login.login(connection, phone, password, function(error, pat) {
-      if (error == null) {
-        res.cookie('token',pat,{signed: true});
-        res.redirect('/analytics');
-      } else {
-        res.render('login/login');
-      }
-      connection.release();
-    });
-  });
+app.get('/register', function (req, res) {
+  //res.redirect('/');
+  res.render('register/register');
 });
 app.get('/restricted', authenticate, function (req, res) {
   res.render('analytics/analytics');
