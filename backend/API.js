@@ -14,13 +14,13 @@ app.get('/', function(req, res) {
   res.end();
   console.log('API domain');
 });
-
 app.post('/login', function(req, res) {
   var phone = req.body.phone,
       password = req.body.password;
   sql.pool.getConnection(function(err, connection) {
     login.login(connection, phone, password, function(error, pat) {
       res.json({'error': error, 'pat': pat});
+      connection.release();
     });
   });
 });
@@ -32,6 +32,7 @@ app.post('/login/register', function(req, res) {
   sql.pool.getConnection(function(err, connection) {
     login.register(connection, first, last, phone, password,function(error, pkey) {
       res.json({'error': error, 'private_key':pkey});
+      connection.release();
     });
   });
 });
@@ -41,6 +42,7 @@ app.put('/login/register', function(req, res) {
   sql.pool.getConnection(function(err, connection) {
     login.verify(connection, trt, code, function(error, pat) {
       res.json({'error': error, 'token': pat});
+      connection.release();
     });
   });
 });
