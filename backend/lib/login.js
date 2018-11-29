@@ -4,7 +4,6 @@ var sql = require('./mysql-pool');
 var counter = require('./counter');
 var sms =  require('./sms');
 
-//console.log(cryptr.encrypt('12345678'));
 function login(connection, phone, password, func) {
   connection.query("SELECT * FROM users WHERE phone = ?", [phone], function (error, results, fields) {
     if (error != null) {
@@ -137,11 +136,32 @@ function create_pat(connection, user_id, func) {
                     "SELECT `token` FROM `users_pat` WHERE `pat_id` = LAST_INSERT_ID();",
                      [token, user_id, token], function(error, results, fields) {
     if (error != null) {
-      console.log(error);
       func('error_issuing_pat',null);
     } else {
-      console.log(results);
       func(null, results[2][0].token);
+    }
+  });
+}
+
+function auth(connection, token, func) {
+  connection.query("SELECT user_id FROM `users_pat` WHERE `token` = ? AND `active` = 1", [token], function (error, results, fields) {
+    console.log(error);
+    if (error != null) {
+      func('error_misc',null);
+    } else if (results.length != 1) {
+      func('error_auth', null);
+    } else {
+      func(null,results[0].user_id);
+    }
+  });
+}
+
+function logout(connection, pat, func) {
+  connection.query("UPDATE `users_pat` SET `active` = '0' WHERE `pat` = ?", [pat], function (error, results, fields) {
+    if (error != null) {
+      func('error_misc');
+    } else {
+      func(null);
     }
   });
 }
@@ -149,3 +169,5 @@ function create_pat(connection, user_id, func) {
 exports.login = login;
 exports.register = register;
 exports.verify = verify;
+exports.auth = auth;
+exports.logout = logout;
