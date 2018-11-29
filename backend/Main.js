@@ -3,12 +3,16 @@ var http = require('http');
 var express = require("express");
 var app = express();
 var path = require('path');
+
+var sql         = require('./lib/mysql-pool');
+var login       = require('./lib/login');
+
 // var routes = require('./routes/routes.js');
 // var uuid = require('node-uuid');
 // var cookieSession = require('cookie-session');
-// var bodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 // var mongoose = require('mongoose');
-// var cookieParser = require('cookie-parser');
+var cookieParser = require('cookie-parser');
 // var passport = require('passport');
 // var auth = require('./auth');
 
@@ -20,17 +24,63 @@ app.use(express.static('../frontend'));
 
 // var generateCookieSecret = () => 'iamasecret' + uuid.v4();
 // app.use(cookieSession({secret: generateCookieSecret()}));
-// app.use(cookieParser());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({
-// 	extended: true
-// }));
+app.use(cookieParser("9061nl24areDTMoLhUpaBLtEAaMDHZFrBlOdiFX7tys4HBx9FCDQ8c"));
+function authenticate(req, res, next) {
+  if (!req.cookies.token) {
+    res.redirect('/login');
+  } else {
+    var token = req.cookies.token;
+    sql.pool.getConnection(function(err, connection) {
+      if (err != null) {
+        res.json({error: error});
+        connection.release();
+      }
+      login.auth(connection, token, function(error, user_id) {
+        if (error != null) {
+          res.redirect('/login');
+        } else {
+          res.cookie('user_id',user_id,{signed: true});
+          next();
+        }
+        connection.release();
+      });
+    });
+  }
+}
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+ 	extended: true
+}));
 
 // auth(passport);
 // app.use(passport.initialize());
 
 /* Routing */
-app.get('/', (req, res) => res.render('landing/landing'));
+app.get('/login', function (req, res) {
+  //res.redirect('/');
+  res.render('login/login');
+});
+app.post('/login', function (req, res) {
+  var phone = req.body.phone,
+      password = req.body.password;
+  sql.pool.getConnection(function(err, connection) {
+    login.login(connection, phone, password, function(error, pat) {
+      if (error == null) {
+        res.cookie('token',pat,{signed: true});
+        res.redirect('/analytics');
+      } else {
+        res.render('login/login');
+      }
+      connection.release();
+    });
+  });
+});
+app.get('/restricted', authenticate, function (req, res) {
+  res.render('analytics/analytics');
+})
+app.get('/', (req, res) => {
+  res.render('landing/landing')
+});
 app.get('/analytics', (req, res) => res.render('analytics/analytics'));
 app.get('/host', (req, res) => res.render('host/host'));
 app.get('/waiter', (req, res) => res.render('waiter/waiter'));
