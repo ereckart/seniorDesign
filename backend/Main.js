@@ -64,6 +64,10 @@ app.get('/register', function (req, res) {
   //res.redirect('/');
   res.render('register/register');
 });
+app.get('/verify', function (req, res) {
+  //res.redirect('/');
+  res.render('verify/verify');
+});
 app.get('/restricted', authenticate, function (req, res) {
   res.render('analytics/analytics');
 })

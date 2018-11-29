@@ -22,7 +22,7 @@
 
     <!-- Custom styles for this template -->
     <link href="../style/css/agency.min.css" rel="stylesheet">
-    <script src="registration_page.js"></script>
+    <script src="verification_page.js"></script>
   </head>
 
   <body id="page-top">
@@ -40,24 +40,17 @@
       <div class="container">
         <div class="main-div">
           <div class="panel">
-            <h2>Waitr Registration</h2>
-            <p>Please enter your phone and password</p>
+            <h2>Waitr Account Verification</h2>
+            <p>Please enter your verification code send by SMS</p>
             <p id="error_message" style="color: red">&nbsp;</p>
           </div>
             <div class="form-group">
-              <input type="text" class="form-control" style="width: calc(50% - 2px); display: inline-block;" id="registration_first" name="registration_first" placeholder="First">
-              <input type="text" class="form-control" style="width: calc(50% - 2px); display: inline-block;" id="registration_last" name="registration_last" placeholder="Last">
-            </div>
-            <div class="form-group">
-              <input type="phone" class="form-control" id="registration_phone" name="registration_phone" placeholder="Phone">
-            </div>
-            <div class="form-group">
-              <input type="password" class="form-control" id="registration_password" name="registration_password" placeholder="Password">
+              <input type="number" class="form-control" id="verification_code" name="verification_code" placeholder="Verification Code">
             </div>
             <div class="forgot">
               <a href="reset.html">Forgot password?</a>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="send_registration();">Register</button>
+            <button type="submit" class="btn btn-primary" onclick="send_verification();">Verify Account</button>
         </div>
       </div>
     </section>
