@@ -5,9 +5,7 @@ function send_login() {
     phone: document.getElementById('login_phone').value,
     password: document.getElementById('login_password').value
   }
-  console.log('sending');
   $.post('https://api.waitrtech.com/login', data, function(reply, status) {
-    console.log('reply');
     if (reply.error == 'error_phone') {
       login_error('Phone is not registered to an account');
     } else if (reply.error == 'error_password') {
